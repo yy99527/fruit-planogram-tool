@@ -95,6 +95,7 @@ html, body {
   background: #fafafa; cursor: pointer; font-size: 13px; text-align: left;
 }
 .quick-grid button:hover, .quick-grid button.active { background: #eff6ff; border-color: #3b82f6; }
+.quick-grid .q-emoji { font-size: 18px; line-height: 1; }
 
 .list { list-style: none; margin: 0; padding: 0; }
 .list li {
@@ -104,7 +105,9 @@ html, body {
 }
 .list li:hover { background: #f3f4f6; }
 .list li.active { background: #eff6ff; border-color: #3b82f6; }
-.list li img.thumb, .list li .swatch { width: 22px; height: 22px; border-radius: 4px; flex: none; object-fit: cover; border: 1px solid #d1d5db; }
+.list li img.thumb, .list li .swatch { width: 24px; height: 24px; border-radius: 5px; flex: none; object-fit: cover; border: 1px solid #d1d5db; }
+.list li .swatch { display: flex; align-items: center; justify-content: center; font-size: 15px; overflow: hidden; }
+.list li.dragging { opacity: .5; }
 .list li .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .list li .del { border: none; background: transparent; color: #9ca3af; cursor: pointer; font-size: 14px; padding: 2px 4px; border-radius: 4px; }
 .list li .del:hover { color: #dc2626; background: #fee2e2; }
@@ -159,6 +162,7 @@ html, body {
 }
 .slot:hover { background: rgba(59,130,246,0.25); }
 .slot.filled { border: 1px solid rgba(255,255,255,0.9); background: rgba(0,0,0,0.32); }
+.slot.drop-target { background: rgba(59,130,246,0.45); outline: 2px solid #3b82f6; outline-offset: -2px; }
 .slot .s-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .9; }
 .slot .s-cap {
   position: relative; z-index: 1;

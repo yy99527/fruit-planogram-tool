@@ -332,6 +332,19 @@ function renderGrid() {
     }
     el.addEventListener('click', () => fillSlot(key));
     el.addEventListener('contextmenu', (e) => { e.preventDefault(); clearSlot(key); });
+    el.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; el.classList.add('drop-target'); });
+    el.addEventListener('dragleave', () => el.classList.remove('drop-target'));
+    el.addEventListener('drop', (e) => {
+      e.preventDefault();
+      el.classList.remove('drop-target');
+      const fruitId = e.dataTransfer.getData('text/plain');
+      if (!fruitId) return;
+      selectedFruitId = fruitId;
+      updatePickLabel();
+      renderFruitList();
+      renderQuickFruits();
+      fillSlot(key, fruitId);
+    });
     slotsLayer.appendChild(el);
   }
 
@@ -348,11 +361,13 @@ function renderGrid() {
   }
 }
 
-function fillSlot(key) {
-  if (!selectedFruitId) { toast('请先在右侧「水果预设」选一种水果'); return; }
+function fillSlot(key, fruitId) {
+  const fid = fruitId || selectedFruitId;
+  if (!fid) { toast('请先到「②水果预设」点选，或直接把水果拖到格子上'); return; }
+  if (!fruitById(fid)) { toast('该水果已不存在，请重新添加'); return; }
   const isTop = key.charAt(0) === 'T';
   const count = isTop ? 1 : state.structure.stackCount;
-  state.slots[key] = { fruitId: selectedFruitId, count };
+  state.slots[key] = { fruitId: fid, count };
   save();
   renderGrid();
 }
@@ -404,17 +419,27 @@ const QUICK_FRUITS = [
   { name: '牛油果', emoji: '🥑', color: '#65a30d' },
 ];
 
+function updatePickLabel() {
+  const f = fruitById(selectedFruitId);
+  if (selectedFruitId && f) {
+    currentPick.classList.remove('hidden');
+    pickLabel.textContent = `${f.emoji || '🍏'} ${f.name}（点柜子格子填入）`;
+  } else {
+    currentPick.classList.add('hidden');
+    pickLabel.textContent = '';
+  }
+}
 function selectFruit(id) {
   selectedFruitId = id;
-  const f = fruitById(id);
-  currentPick.classList.remove('hidden');
-  pickLabel.textContent = f ? `${f.emoji || '🍏'} ${f.name}` : '';
+  updatePickLabel();
   renderFruitList();
   renderQuickFruits();
+  const f = fruitById(id);
+  if (f) toast(`已选中「${f.name}」→ 去画布点格子，或按住拖到格子上`);
 }
 function clearPick() {
   selectedFruitId = null;
-  currentPick.classList.add('hidden');
+  updatePickLabel();
   renderFruitList();
   renderQuickFruits();
 }
@@ -429,7 +454,9 @@ function renderQuickFruits() {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = active ? 'active' : '';
-    b.textContent = `${qf.emoji} ${qf.name}`;
+    b.title = '点击选中，或直接拖到柜子格子';
+    b.draggable = true;
+    b.innerHTML = `<span class="q-emoji">${qf.emoji}</span><span>${esc(qf.name)}</span>`;
     b.addEventListener('click', () => {
       let target = f;
       if (!target) {
@@ -438,6 +465,16 @@ function renderQuickFruits() {
         save();
       }
       selectFruit(target.id);
+    });
+    b.addEventListener('dragstart', (e) => {
+      let target = state.fruits.find((x) => x.name === qf.name);
+      if (!target) {
+        target = { id: uid(), name: qf.name, color: qf.color, emoji: qf.emoji };
+        state.fruits.push(target);
+        save();
+      }
+      e.dataTransfer.setData('text/plain', target.id);
+      e.dataTransfer.effectAllowed = 'copy';
     });
     wrap.appendChild(b);
   });
@@ -449,10 +486,12 @@ function renderFruitList() {
   state.fruits.forEach((fruit) => {
     const li = document.createElement('li');
     li.className = fruit.id === selectedFruitId ? 'active' : '';
-    let icon = `<span class="swatch" style="background:${esc(fruit.color)}"></span>`;
+    li.draggable = true;
+    li.title = '点击选中，或拖到柜子格子';
+    let icon = `<span class="swatch" style="background:${esc(fruit.color)}">${esc(fruit.emoji || '🍏')}</span>`;
     if (fruit.imageId) icon = '<img class="thumb" alt="">';
     li.innerHTML = icon +
-      `<span class="name">${esc(fruit.emoji || '🍏')} ${esc(fruit.name)}</span>` +
+      `<span class="name">${esc(fruit.name)}</span>` +
       '<button class="del" title="删除">✕</button>';
     if (fruit.imageId) setImgUrl(li.querySelector('img.thumb'), fruit.imageId);
     const del = li.querySelector('.del');
@@ -464,6 +503,10 @@ function renderFruitList() {
       save(); renderGrid(); renderFruitList();
     });
     li.addEventListener('click', () => selectFruit(fruit.id));
+    li.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', fruit.id);
+      e.dataTransfer.effectAllowed = 'copy';
+    });
     ul.appendChild(li);
   });
 }
