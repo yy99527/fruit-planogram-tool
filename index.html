@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>水果陈列棚格图工具</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">🍎 水果陈列棚格图工具</div>
+    <input id="planName" class="plan-name" type="text" placeholder="方案名称（如：门店A 水果区）" value="门店A 水果区">
+    <div class="actions">
+      <button id="saveJson" class="btn">💾 保存方案</button>
+      <button id="loadJsonBtn" class="btn">📂 导入方案</button>
+      <input id="loadJson" type="file" accept=".json,application/json" hidden>
+      <button id="exportPng" class="btn primary">🖼️ 导出图片</button>
+      <button id="deleteSelected" class="btn danger" title="删除选中的设备或水果（也可按 Delete 键）">🗑️ 删除选中</button>
+      <button id="clearAll" class="btn">🧹 清空画布</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <div class="tabs">
+        <button id="tabDevicesBtn" class="tab active">货架 / 水果柜</button>
+        <button id="tabFruitsBtn" class="tab">水果预设</button>
+      </div>
+
+      <!-- 设备面板 -->
+      <section id="panelDevices" class="panel">
+        <div class="block">
+          <div class="block-title">🗂️ 画布网格</div>
+          <div class="grid2">
+            <label>总列数 <input id="gridCols" type="number" min="2" max="60" value="12"></label>
+            <label>总行数 <input id="gridRows" type="number" min="2" max="60" value="8"></label>
+            <label>格子大小(px) <input id="cellSize" type="number" min="20" max="80" value="36"></label>
+            <label>每格实际(cm) <input id="cellCm" type="number" min="1" max="200" value="10"></label>
+          </div>
+          <p class="hint">调整网格后，已摆放的设备与水果会保留并自动收进网格范围内。</p>
+        </div>
+
+        <div class="block">
+          <div class="block-title">➕ 添加设备</div>
+          <label>类型
+            <select id="devType">
+              <option value="货架">货架</option>
+              <option value="水果柜">水果柜</option>
+              <option value="堆头">堆头</option>
+              <option value="冰柜">冰柜</option>
+            </select>
+          </label>
+          <label>名称 <input id="devName" type="text" value="货架A" placeholder="如：货架A"></label>
+          <div class="grid2">
+            <label>宽(格) <input id="devW" type="number" min="1" max="30" value="4"></label>
+            <label>高(格) <input id="devH" type="number" min="1" max="30" value="3"></label>
+          </div>
+          <label>颜色 <input id="devColor" type="color" value="#3b82f6"></label>
+          <button id="addDevice" class="btn full">添加设备</button>
+        </div>
+
+        <div class="block">
+          <div class="block-title">📦 设备列表 <span class="muted">（点击选中，拖动移动，右下角可缩放）</span></div>
+          <ul id="deviceList" class="list"></ul>
+        </div>
+      </section>
+
+      <!-- 水果面板 -->
+      <section id="panelFruits" class="panel hidden">
+        <div class="block">
+          <div class="block-title">🍓 添加水果 / 包装盒</div>
+          <label>名称 <input id="fruitName" type="text" value="苹果" placeholder="如：苹果"></label>
+          <div class="grid2">
+            <label>宽(格) <input id="fruitW" type="number" min="1" max="30" value="1"></label>
+            <label>高(格) <input id="fruitH" type="number" min="1" max="30" value="1"></label>
+          </div>
+          <label>标识 <input id="fruitEmoji" type="text" value="🍎" maxlength="4" placeholder="emoji"></label>
+          <label>颜色 <input id="fruitColor" type="color" value="#ef4444"></label>
+          <button id="addFruit" class="btn full">添加水果</button>
+        </div>
+
+        <div class="block">
+          <div class="block-title">📋 水果预设 <span class="muted">（拖到画布，或点击后点画布放置）</span></div>
+          <ul id="fruitList" class="list"></ul>
+        </div>
+      </section>
+    </aside>
+
+    <div id="canvasWrap" class="canvas-wrap">
+      <div id="canvas" class="canvas"></div>
+      <div id="toast" class="toast hidden"></div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
