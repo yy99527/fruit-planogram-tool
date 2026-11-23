@@ -17,6 +17,7 @@
       <button id="exportPng" class="btn primary">🖼️ 导出图片</button>
       <button id="deleteSelected" class="btn danger" title="删除选中的设备或水果（也可按 Delete 键）">🗑️ 删除选中</button>
       <button id="clearAll" class="btn">🧹 清空画布</button>
+      <button id="loadDemo" class="btn">🆕 载入示例</button>
     </div>
   </header>
 
@@ -53,8 +54,9 @@
           <label>名称 <input id="devName" type="text" value="货架A" placeholder="如：货架A"></label>
           <div class="grid2">
             <label>宽(格) <input id="devW" type="number" min="1" max="30" value="4"></label>
-            <label>高(格) <input id="devH" type="number" min="1" max="30" value="3"></label>
+            <label>高(格) <input id="devH" type="number" min="1" max="30" value="4"></label>
           </div>
+          <label>层数（水果柜分层，0=不分层）<input id="devLayers" type="number" min="0" max="10" value="3"></label>
           <label>颜色 <input id="devColor" type="color" value="#3b82f6"></label>
           <label>实物照片（可选）
             <span class="img-upload">
@@ -76,10 +78,20 @@
       <!-- 水果面板 -->
       <section id="panelFruits" class="panel hidden">
         <div class="block">
+          <div class="block-title">⚡ 标准份水果（一键添加）</div>
+          <p class="hint">门店大部分水果是统一标准份，先设好标准份盒尺寸，再点下面水果快速生成预设。</p>
+          <div class="grid2">
+            <label>份盒宽(格) <input id="stdW" type="number" min="1" max="30" value="2"></label>
+            <label>份盒高(格) <input id="stdH" type="number" min="1" max="30" value="1"></label>
+          </div>
+          <div id="quickFruits" class="quick-grid"></div>
+        </div>
+
+        <div class="block">
           <div class="block-title">🍓 添加水果 / 包装盒</div>
           <label>名称 <input id="fruitName" type="text" value="苹果" placeholder="如：苹果"></label>
           <div class="grid2">
-            <label>宽(格) <input id="fruitW" type="number" min="1" max="30" value="1"></label>
+            <label>宽(格) <input id="fruitW" type="number" min="1" max="30" value="2"></label>
             <label>高(格) <input id="fruitH" type="number" min="1" max="30" value="1"></label>
           </div>
           <div class="real-size">

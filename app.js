@@ -150,26 +150,27 @@ function defaultState() {
     name: '门店A 水果区',
     grid: { cols: 12, rows: 8, cellSize: 36, cellCm: 10 },
     devices: [
-      { id: 'd1', type: '货架', name: '货架A', x: 1, y: 1, w: 4, h: 3, color: '#3b82f6' },
-      { id: 'd2', type: '水果柜', name: '水果柜B', x: 6, y: 1, w: 4, h: 2, color: '#10b981' },
-      { id: 'd3', type: '堆头', name: '堆头C', x: 1, y: 5, w: 3, h: 2, color: '#f59e0b' },
+      { id: 'd1', type: '货架', name: '货架A', x: 1, y: 1, w: 4, h: 4, color: '#3b82f6', layers: 0 },
+      { id: 'd2', type: '水果柜', name: '水果柜', x: 6, y: 1, w: 4, h: 4, color: '#10b981', layers: 3 },
+      { id: 'd3', type: '堆头', name: '堆头', x: 1, y: 5, w: 3, h: 2, color: '#f59e0b', layers: 0 },
     ],
     fruits: [
-      { id: 'f1', name: '苹果', w: 1, h: 1, color: '#ef4444', emoji: '🍎' },
-      { id: 'f2', name: '橙子', w: 1, h: 1, color: '#f97316', emoji: '🍊' },
-      { id: 'f3', name: '葡萄盒', w: 1, h: 2, color: '#8b5cf6', emoji: '🍇' },
-      { id: 'f4', name: '整箱苹果', w: 2, h: 2, color: '#dc2626', emoji: '📦' },
+      { id: 'f1', name: '苹果', w: 2, h: 1, color: '#ef4444', emoji: '🍎' },
+      { id: 'f2', name: '橙子', w: 2, h: 1, color: '#f97316', emoji: '🍊' },
+      { id: 'f3', name: '葡萄', w: 2, h: 1, color: '#8b5cf6', emoji: '🍇' },
+      { id: 'f4', name: '草莓', w: 2, h: 1, color: '#ec4899', emoji: '🍓' },
+      { id: 'f5', name: '整箱苹果', w: 2, h: 2, color: '#dc2626', emoji: '📦' },
     ],
     placements: [
-      { id: 'p1', fruitId: 'f1', x: 1, y: 1 },
-      { id: 'p2', fruitId: 'f1', x: 2, y: 1 },
-      { id: 'p3', fruitId: 'f1', x: 3, y: 1 },
-      { id: 'p4', fruitId: 'f2', x: 1, y: 2 },
-      { id: 'p5', fruitId: 'f2', x: 2, y: 2 },
-      { id: 'p6', fruitId: 'f3', x: 3, y: 2 },
-      { id: 'p7', fruitId: 'f4', x: 6, y: 1 },
-      { id: 'p8', fruitId: 'f1', x: 8, y: 1 },
-      { id: 'p9', fruitId: 'f3', x: 1, y: 5 },
+      { id: 'p1', fruitId: 'f1', x: 6, y: 1 },
+      { id: 'p2', fruitId: 'f1', x: 8, y: 1 },
+      { id: 'p3', fruitId: 'f2', x: 6, y: 3 },
+      { id: 'p4', fruitId: 'f2', x: 8, y: 3 },
+      { id: 'p5', fruitId: 'f3', x: 6, y: 4 },
+      { id: 'p6', fruitId: 'f3', x: 8, y: 4 },
+      { id: 'p7', fruitId: 'f5', x: 1, y: 1 },
+      { id: 'p8', fruitId: 'f4', x: 1, y: 3 },
+      { id: 'p9', fruitId: 'f4', x: 1, y: 5 },
     ],
   };
 }
@@ -252,7 +253,15 @@ function buildDeviceEl(dev) {
   if (!dev.imageId) el.style.background = hexToRgba(dev.color, 0.22);
   let inner = '';
   if (dev.imageId) inner += '<img class="dev-img" alt="">';
-  inner += `<span class="dev-label">${esc(dev.name)}<br><span class="dev-size">${dev.w}×${dev.h} 格</span></span>`;
+  if (dev.layers > 1) {
+    const pts = shelfLevels(dev);
+    for (let k = 1; k < pts.length - 1; k++) {
+      inner += `<span class="shelf" style="top:${pts[k] * cell}px"></span>`;
+    }
+    inner += '<span class="shelf-top"></span>';
+  }
+  const layerInfo = dev.layers > 1 ? `<span class="dev-size">${dev.w}×${dev.h} 格 · ${dev.layers}层</span>` : `<span class="dev-size">${dev.w}×${dev.h} 格</span>`;
+  inner += `<span class="dev-label">${esc(dev.name)}<br>${layerInfo}</span>`;
   inner += '<span class="resizer" title="拖动调整大小"></span>';
   el.innerHTML = inner;
   if (dev.imageId) setImgUrl(el.querySelector('.dev-img'), dev.imageId);
@@ -322,7 +331,14 @@ function bindDevice(el, dev) {
       el.querySelector('.dev-size').textContent = `${dev.w}×${dev.h} 格`;
     }
   });
-  const endDrag = () => { if (activeDrag && activeDrag.id === dev.id) { activeDrag = null; save(); } };
+  const endDrag = () => {
+    if (activeDrag && activeDrag.id === dev.id) {
+      const wasResize = activeDrag.kind === 'resize';
+      activeDrag = null;
+      save();
+      if (wasResize) render();
+    }
+  };
   el.addEventListener('pointerup', endDrag);
   el.addEventListener('pointercancel', endDrag);
 
@@ -355,7 +371,19 @@ function bindPlacement(el, pl) {
     el.style.left = (pl.x * cell) + 'px';
     el.style.top = (pl.y * cell) + 'px';
   });
-  const endDrag = () => { if (activeDrag && activeDrag.id === pl.id) { activeDrag = null; save(); } };
+  const endDrag = () => {
+    if (activeDrag && activeDrag.id === pl.id) {
+      activeDrag = null;
+      const fruit = fruitById(pl.fruitId);
+      if (fruit) {
+        const s = snapToShelf(fruit, pl.x, pl.y);
+        pl.x = clamp(0, state.grid.cols - fruit.w, s.x);
+        pl.y = clamp(0, state.grid.rows - fruit.h, s.y);
+      }
+      save();
+      render();
+    }
+  };
   el.addEventListener('pointerup', endDrag);
   el.addEventListener('pointercancel', endDrag);
 }
@@ -367,11 +395,40 @@ function cellFromEvent(e) {
   return { col: Math.floor((e.clientX - rect.left) / cell), row: Math.floor((e.clientY - rect.top) / cell) };
 }
 
+/* 层板与吸附 */
+function shelfLevels(dev) {
+  const layers = dev.layers > 1 ? dev.layers : 1;
+  const pts = [];
+  for (let k = 0; k <= layers; k++) pts.push(Math.round(dev.h * k / layers));
+  return pts; // 长度 layers+1，[0, ..., dev.h]
+}
+
+/* 果盒吸附：中心落在分层设备内时，果盒底部贴到最近层板 */
+function snapToShelf(fruit, x, y) {
+  if (!fruit || !fruit.w) return { x, y };
+  const cx = x + fruit.w / 2;
+  const cy = y + fruit.h / 2;
+  for (const dev of state.devices) {
+    if (!(dev.layers > 1)) continue;
+    if (cx < dev.x || cx > dev.x + dev.w) continue;
+    const pts = shelfLevels(dev);
+    for (let i = 0; i < pts.length - 1; i++) {
+      if (cy >= dev.y + pts[i] && cy < dev.y + pts[i + 1]) {
+        return { x, y: dev.y + pts[i + 1] - fruit.h };
+      }
+    }
+  }
+  return { x, y };
+}
+
 function placeFruit(fruitId, col, row, keepPlacing) {
   const fruit = fruitById(fruitId);
   if (!fruit) { toast('请先添加水果预设'); return; }
-  const x = clamp(0, state.grid.cols - fruit.w, col);
-  const y = clamp(0, state.grid.rows - fruit.h, row);
+  let x = clamp(0, state.grid.cols - fruit.w, col);
+  let y = clamp(0, state.grid.rows - fruit.h, row);
+  const s = snapToShelf(fruit, x, y);
+  x = clamp(0, state.grid.cols - fruit.w, s.x);
+  y = clamp(0, state.grid.rows - fruit.h, s.y);
   state.placements.push({ id: uid(), fruitId, x, y });
   save();
   render();
@@ -518,6 +575,7 @@ $('addDevice').addEventListener('click', () => {
   const h = clamp(1, 30, parseInt($('devH').value, 10) || 3);
   const color = $('devColor').value;
   const type = $('devType').value;
+  const layers = clamp(0, 10, parseInt($('devLayers').value, 10) || 0);
   let x = 0, y = 0;
   outer: for (let row = 0; row <= state.grid.rows - h; row++) {
     for (let col = 0; col <= state.grid.cols - w; col++) {
@@ -525,7 +583,7 @@ $('addDevice').addEventListener('click', () => {
       if (!overlap) { x = col; y = row; break outer; }
     }
   }
-  state.devices.push({ id: uid(), type, name, x, y, w, h, color, imageId: pendingDevImageId || undefined });
+  state.devices.push({ id: uid(), type, name, x, y, w, h, color, layers, imageId: pendingDevImageId || undefined });
   pendingDevImageId = null;
   $('devImgPreview').classList.add('hidden');
   $('devImgClear').classList.add('hidden');
@@ -549,6 +607,46 @@ $('addFruit').addEventListener('click', () => {
   save(); render();
   toast(`已添加水果预设「${name}」`);
 });
+
+/* ---------------- 标准份快速预设 ---------------- */
+const QUICK_FRUITS = [
+  { name: '苹果', emoji: '🍎', color: '#ef4444' },
+  { name: '橙子', emoji: '🍊', color: '#f97316' },
+  { name: '香蕉', emoji: '🍌', color: '#facc15' },
+  { name: '葡萄', emoji: '🍇', color: '#8b5cf6' },
+  { name: '草莓', emoji: '🍓', color: '#ec4899' },
+  { name: '猕猴桃', emoji: '🥝', color: '#84cc16' },
+  { name: '梨', emoji: '🍐', color: '#a3e635' },
+  { name: '桃', emoji: '🍑', color: '#fb7185' },
+  { name: '火龙果', emoji: '🐉', color: '#f43f5e' },
+  { name: '芒果', emoji: '🥭', color: '#fbbf24' },
+  { name: '柠檬', emoji: '🍋', color: '#eab308' },
+  { name: '圣女果', emoji: '🍅', color: '#dc2626' },
+  { name: '西瓜切块', emoji: '🍉', color: '#22c55e' },
+  { name: '哈密瓜', emoji: '🍈', color: '#16a34a' },
+  { name: '菠萝', emoji: '🍍', color: '#d97706' },
+  { name: '牛油果', emoji: '🥑', color: '#65a30d' },
+];
+
+function renderQuickFruits() {
+  const wrap = $('quickFruits');
+  wrap.innerHTML = '';
+  QUICK_FRUITS.forEach((qf) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = `${qf.emoji} ${qf.name}`;
+    b.addEventListener('click', () => addQuickFruit(qf));
+    wrap.appendChild(b);
+  });
+}
+
+function addQuickFruit(qf) {
+  const w = clamp(1, 30, parseInt($('stdW').value, 10) || 2);
+  const h = clamp(1, 30, parseInt($('stdH').value, 10) || 1);
+  state.fruits.push({ id: uid(), name: qf.name, w, h, color: qf.color, emoji: qf.emoji });
+  save(); render();
+  toast(`已添加标准份「${qf.name}」（${w}×${h}格）`);
+}
 
 /* ---------------- 网格设置 ---------------- */
 function applyGrid() {
@@ -614,6 +712,17 @@ $('clearAll').addEventListener('click', () => {
   placingFruitId = null;
   save(); render();
   toast('画布已清空');
+});
+
+$('loadDemo').addEventListener('click', () => {
+  if (!confirm('载入示例将覆盖当前画布与预设，确定吗？')) return;
+  state = defaultState();
+  selected = null;
+  placingFruitId = null;
+  pendingFruitImageId = null;
+  pendingDevImageId = null;
+  save(); render();
+  toast('已载入示例（分层水果柜 + 标准份水果）');
 });
 
 /* ---------------- 保存 / 导入方案（含图片打包） ---------------- */
@@ -734,7 +843,17 @@ async function exportPng() {
     ctx.strokeStyle = dev.color;
     ctx.lineWidth = 3;
     ctx.strokeRect(x + 1.5, y + 1.5, dw - 3, dh - 3);
-    drawTextWithBg(ctx, `${dev.name} · ${dev.w}×${dev.h}格`, x + dw / 2, y + dh / 2, dw - 10, 13, '#111827');
+    // 层板
+    if (dev.layers > 1) {
+      const pts = shelfLevels(dev);
+      ctx.fillStyle = '#8a6239';
+      for (let k = 1; k < pts.length - 1; k++) {
+        const sy = y + pts[k] * cellSize;
+        ctx.fillRect(x + 1, sy - 2, dw - 2, 4);
+      }
+      ctx.fillRect(x + 1, y + 1, dw - 2, 4);
+    }
+    drawTextWithBg(ctx, `${dev.name} · ${dev.w}×${dev.h}格${dev.layers > 1 ? ' · ' + dev.layers + '层' : ''}`, x + dw / 2, y + dh / 2, dw - 10, 13, '#111827');
   });
 
   // 水果块
@@ -817,4 +936,5 @@ $('tabFruitsBtn').addEventListener('click', () => {
 });
 
 /* ---------------- 启动 ---------------- */
+renderQuickFruits();
 render();

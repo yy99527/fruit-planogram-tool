@@ -102,6 +102,13 @@ html, body {
 .muted { color: #9ca3af; font-weight: 400; font-size: 11px; }
 .real-size { background: #f8fafc; border: 1px dashed #d1d5db; border-radius: 8px; padding: 8px; margin: 2px 0 8px; }
 .small-title { margin-bottom: 4px; font-size: 12px; }
+.quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.quick-grid button {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 8px; border: 1px solid #e5e7eb; border-radius: 8px;
+  background: #fafafa; cursor: pointer; font-size: 13px; text-align: left;
+}
+.quick-grid button:hover { background: #eff6ff; border-color: #bfdbfe; }
 .img-upload { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
 .img-upload .btn { margin: 0; }
 .thumb { width: 42px; height: 42px; object-fit: cover; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; }
@@ -192,6 +199,26 @@ html, body {
   display: none; z-index: 5;
 }
 .device.selected .resizer { display: block; }
+
+/* 水果柜层板 */
+.device .shelf {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(to bottom, #6b4f2a, #8a6239);
+  border-top: 1px solid #3f2d15;
+  z-index: 4;
+  pointer-events: none;
+}
+.device .shelf-top {
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 4px;
+  background: linear-gradient(to bottom, #6b4f2a, #8a6239);
+  z-index: 4;
+  pointer-events: none;
+}
 
 /* 水果块 */
 .placement {
