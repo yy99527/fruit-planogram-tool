@@ -56,6 +56,14 @@
             <label>高(格) <input id="devH" type="number" min="1" max="30" value="3"></label>
           </div>
           <label>颜色 <input id="devColor" type="color" value="#3b82f6"></label>
+          <label>实物照片（可选）
+            <span class="img-upload">
+              <button id="devImgBtn" class="btn" type="button">📷 上传图片</button>
+              <img id="devImgPreview" class="thumb hidden" alt="">
+              <button id="devImgClear" class="btn hidden" type="button">清除</button>
+              <input id="devImgInput" type="file" accept="image/*" hidden>
+            </span>
+          </label>
           <button id="addDevice" class="btn full">添加设备</button>
         </div>
 
@@ -74,7 +82,23 @@
             <label>宽(格) <input id="fruitW" type="number" min="1" max="30" value="1"></label>
             <label>高(格) <input id="fruitH" type="number" min="1" max="30" value="1"></label>
           </div>
-          <label>标识 <input id="fruitEmoji" type="text" value="🍎" maxlength="4" placeholder="emoji"></label>
+          <div class="real-size">
+            <div class="block-title small-title">📐 按实物尺寸自动换算（可选）</div>
+            <div class="grid2">
+              <label>宽(cm) <input id="realW" type="number" min="0.1" step="0.5" placeholder="如 20"></label>
+              <label>高(cm) <input id="realH" type="number" min="0.1" step="0.5" placeholder="如 20"></label>
+            </div>
+            <button id="calcGrid" class="btn full" type="button">换算成格子数</button>
+          </div>
+          <label>实物照片（可选）
+            <span class="img-upload">
+              <button id="fruitImgBtn" class="btn" type="button">📷 上传图片</button>
+              <img id="fruitImgPreview" class="thumb hidden" alt="">
+              <button id="fruitImgClear" class="btn hidden" type="button">清除</button>
+              <input id="fruitImgInput" type="file" accept="image/*" hidden>
+            </span>
+          </label>
+          <label>标识 <input id="fruitEmoji" type="text" value="🍎" maxlength="4" placeholder="emoji（无图片时显示）"></label>
           <label>颜色 <input id="fruitColor" type="color" value="#ef4444"></label>
           <button id="addFruit" class="btn full">添加水果</button>
         </div>

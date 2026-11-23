@@ -100,6 +100,11 @@ html, body {
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .hint { font-size: 11px; color: #9ca3af; margin: 8px 0 0; line-height: 1.5; }
 .muted { color: #9ca3af; font-weight: 400; font-size: 11px; }
+.real-size { background: #f8fafc; border: 1px dashed #d1d5db; border-radius: 8px; padding: 8px; margin: 2px 0 8px; }
+.small-title { margin-bottom: 4px; font-size: 12px; }
+.img-upload { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.img-upload .btn { margin: 0; }
+.thumb { width: 42px; height: 42px; object-fit: cover; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; }
 
 /* 列表 */
 .list { list-style: none; margin: 0; padding: 0; }
@@ -118,6 +123,7 @@ html, body {
 }
 .list li:hover { background: #f3f4f6; border-color: #d1d5db; }
 .list li .swatch { width: 14px; height: 14px; border-radius: 4px; flex: none; border: 1px solid rgba(0,0,0,.15); }
+.list li img.thumb { width: 26px; height: 26px; border-radius: 4px; flex: none; object-fit: cover; border: 1px solid #d1d5db; }
 .list li .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .list li .size { color: #6b7280; font-size: 12px; white-space: nowrap; }
 .list li .del {
@@ -163,17 +169,19 @@ html, body {
   justify-content: center;
   overflow: hidden;
   z-index: 10;
-  box-shadow: inset 0 0 0 1000px rgba(255,255,255,.35);
 }
+.device .dev-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 .device .dev-label {
+  position: relative;
   font-size: 12px;
   font-weight: 700;
   color: #111827;
-  text-shadow: 0 1px 0 rgba(255,255,255,.8);
   pointer-events: none;
   text-align: center;
   line-height: 1.3;
-  padding: 4px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  background: rgba(255,255,255,.72);
 }
 .device .dev-size { font-weight: 400; font-size: 10px; color: #4b5563; }
 .device.selected { outline: 3px solid #f59e0b; outline-offset: 1px; z-index: 30; }
@@ -206,6 +214,19 @@ html, body {
 .placement.selected { outline: 3px solid #f59e0b; outline-offset: 1px; z-index: 30; }
 .placement.small .emoji { font-size: 14px; }
 .placement.small .pl-name { font-size: 9px; }
+
+/* 有实物图片的水果块 */
+.placement .pl-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; border-radius: 4px; }
+.placement .pl-cap {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 1px 3px;
+  background: rgba(255,255,255,.82);
+  border-radius: 0 0 4px 4px;
+  pointer-events: none;
+}
+.placement .pl-cap .pl-name { font-size: 9px; }
+.placement .pl-cap .pl-size { font-size: 8px; }
 
 /* Toast */
 .toast {
