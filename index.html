@@ -3,105 +3,75 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>水果陈列棚格图工具</title>
+  <title>水果柜陈列棚格图工具</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">🍎 水果陈列棚格图工具</div>
-    <input id="planName" class="plan-name" type="text" placeholder="方案名称（如：门店A 水果区）" value="门店A 水果区">
+    <div class="brand">🍎 水果柜陈列棚格图</div>
+    <input id="planName" class="plan-name" type="text" placeholder="方案名称" value="门店A 水果柜">
     <div class="actions">
       <button id="saveJson" class="btn">💾 保存方案</button>
       <button id="loadJsonBtn" class="btn">📂 导入方案</button>
       <input id="loadJson" type="file" accept=".json,application/json" hidden>
       <button id="exportPng" class="btn primary">🖼️ 导出图片</button>
-      <button id="deleteSelected" class="btn danger" title="删除选中的设备或水果（也可按 Delete 键）">🗑️ 删除选中</button>
-      <button id="clearAll" class="btn">🧹 清空画布</button>
-      <button id="loadDemo" class="btn">🆕 载入示例</button>
+      <button id="clearSlots" class="btn">🧹 清空标注</button>
     </div>
   </header>
 
   <main class="layout">
     <aside class="sidebar">
       <div class="tabs">
-        <button id="tabDevicesBtn" class="tab active">货架 / 水果柜</button>
-        <button id="tabFruitsBtn" class="tab">水果预设</button>
+        <button id="tabCabBtn" class="tab active">① 柜子设置</button>
+        <button id="tabFruitsBtn" class="tab">② 水果预设</button>
       </div>
 
-      <!-- 设备面板 -->
-      <section id="panelDevices" class="panel">
+      <!-- 柜子设置面板 -->
+      <section id="panelCab" class="panel">
         <div class="block">
-          <div class="block-title">🗂️ 画布网格</div>
-          <div class="grid2">
-            <label>总列数 <input id="gridCols" type="number" min="2" max="60" value="12"></label>
-            <label>总行数 <input id="gridRows" type="number" min="2" max="60" value="8"></label>
-            <label>格子大小(px) <input id="cellSize" type="number" min="20" max="80" value="36"></label>
-            <label>每格实际(cm) <input id="cellCm" type="number" min="1" max="200" value="10"></label>
-          </div>
-          <p class="hint">调整网格后，已摆放的设备与水果会保留并自动收进网格范围内。</p>
+          <div class="block-title">📷 第1步：上传柜子照片</div>
+          <button id="photoBtn" class="btn full">🖼️ 选择柜子照片</button>
+          <input id="photoInput" type="file" accept="image/*" hidden>
+          <p id="photoHint" class="hint">先传一张正面拍摄的水果柜照片（尽量正对、不要斜拍）。</p>
         </div>
 
         <div class="block">
-          <div class="block-title">➕ 添加设备</div>
-          <label>类型
-            <select id="devType">
-              <option value="货架">货架</option>
-              <option value="水果柜">水果柜</option>
-              <option value="堆头">堆头</option>
-              <option value="冰柜">冰柜</option>
-            </select>
-          </label>
-          <label>名称 <input id="devName" type="text" value="货架A" placeholder="如：货架A"></label>
+          <div class="block-title">📐 第2步：柜子结构</div>
           <div class="grid2">
-            <label>宽(格) <input id="devW" type="number" min="1" max="30" value="4"></label>
-            <label>高(格) <input id="devH" type="number" min="1" max="30" value="4"></label>
+            <label>主体层数 <input id="bodyLayers" type="number" min="1" max="6" value="2"></label>
+            <label>每层横向盒数 <input id="slotsPerLayer" type="number" min="1" max="24" value="10"></label>
+            <label>阶梯堆叠盒数 <input id="stackCount" type="number" min="1" max="6" value="3"></label>
+            <label class="check-row"><input id="topRow" type="checkbox" checked> 柜顶平放区</label>
           </div>
-          <label>层数（水果柜分层，0=不分层）<input id="devLayers" type="number" min="0" max="10" value="3"></label>
-          <label>颜色 <input id="devColor" type="color" value="#3b82f6"></label>
-          <label>实物照片（可选）
-            <span class="img-upload">
-              <button id="devImgBtn" class="btn" type="button">📷 上传图片</button>
-              <img id="devImgPreview" class="thumb hidden" alt="">
-              <button id="devImgClear" class="btn hidden" type="button">清除</button>
-              <input id="devImgInput" type="file" accept="image/*" hidden>
-            </span>
-          </label>
-          <button id="addDevice" class="btn full">添加设备</button>
+          <label>柜顶横向位置数 <input id="topSlots" type="number" min="1" max="24" value="10"></label>
+          <p class="hint">阶梯堆叠盒数：每层用阶梯架，前低后高能放几盒（你说是 3 盒）。柜顶放香蕉等常温水果。</p>
         </div>
 
         <div class="block">
-          <div class="block-title">📦 设备列表 <span class="muted">（点击选中，拖动移动，右下角可缩放）</span></div>
-          <ul id="deviceList" class="list"></ul>
+          <div class="block-title">🎯 第3步：对齐网格</div>
+          <p class="hint">拖动网格框<b>顶部把手</b>移动、四角/四边<b>手柄</b>缩放，把格子对准照片里的柜子。<br>然后在右侧水果预设里选一种水果，点格子即可填入。</p>
+        </div>
+
+        <div class="block">
+          <div class="block-title">🖱️ 操作说明</div>
+          <ul class="help">
+            <li>点某格 = 填入当前选中的水果</li>
+            <li>右键/再次点已填格 = 清空该格</li>
+            <li>拖动 = 移动或缩放网格框，对齐柜子</li>
+          </ul>
         </div>
       </section>
 
-      <!-- 水果面板 -->
+      <!-- 水果预设面板 -->
       <section id="panelFruits" class="panel hidden">
         <div class="block">
-          <div class="block-title">⚡ 标准份水果（一键添加）</div>
-          <p class="hint">门店大部分水果是统一标准份，先设好标准份盒尺寸，再点下面水果快速生成预设。</p>
-          <div class="grid2">
-            <label>份盒宽(格) <input id="stdW" type="number" min="1" max="30" value="2"></label>
-            <label>份盒高(格) <input id="stdH" type="number" min="1" max="30" value="1"></label>
-          </div>
+          <div class="block-title">⚡ 标准份水果（点选后去画布点格子）</div>
           <div id="quickFruits" class="quick-grid"></div>
         </div>
 
         <div class="block">
-          <div class="block-title">🍓 添加水果 / 包装盒</div>
-          <label>名称 <input id="fruitName" type="text" value="苹果" placeholder="如：苹果"></label>
-          <div class="grid2">
-            <label>宽(格) <input id="fruitW" type="number" min="1" max="30" value="2"></label>
-            <label>高(格) <input id="fruitH" type="number" min="1" max="30" value="1"></label>
-          </div>
-          <div class="real-size">
-            <div class="block-title small-title">📐 按实物尺寸自动换算（可选）</div>
-            <div class="grid2">
-              <label>宽(cm) <input id="realW" type="number" min="0.1" step="0.5" placeholder="如 20"></label>
-              <label>高(cm) <input id="realH" type="number" min="0.1" step="0.5" placeholder="如 20"></label>
-            </div>
-            <button id="calcGrid" class="btn full" type="button">换算成格子数</button>
-          </div>
+          <div class="block-title">➕ 自定义水果</div>
+          <label>名称 <input id="fruitName" type="text" placeholder="如：苹果"></label>
           <label>实物照片（可选）
             <span class="img-upload">
               <button id="fruitImgBtn" class="btn" type="button">📷 上传图片</button>
@@ -110,20 +80,42 @@
               <input id="fruitImgInput" type="file" accept="image/*" hidden>
             </span>
           </label>
-          <label>标识 <input id="fruitEmoji" type="text" value="🍎" maxlength="4" placeholder="emoji（无图片时显示）"></label>
+          <label>标识 <input id="fruitEmoji" type="text" value="🍎" maxlength="4" placeholder="emoji（无图时显示）"></label>
           <label>颜色 <input id="fruitColor" type="color" value="#ef4444"></label>
           <button id="addFruit" class="btn full">添加水果</button>
         </div>
 
         <div class="block">
-          <div class="block-title">📋 水果预设 <span class="muted">（拖到画布，或点击后点画布放置）</span></div>
+          <div class="block-title">📋 水果列表 <span class="muted">（点一个 = 选中，去画布点格子填入）</span></div>
           <ul id="fruitList" class="list"></ul>
         </div>
       </section>
     </aside>
 
-    <div id="canvasWrap" class="canvas-wrap">
-      <div id="canvas" class="canvas"></div>
+    <div class="canvas-wrap">
+      <div id="photoStage" class="photo-stage">
+        <div id="photoEmpty" class="photo-empty">
+          <div class="big-emoji">📷</div>
+          <p>在上方「① 柜子设置」里<br>上传一张水果柜照片开始</p>
+        </div>
+        <img id="bgPhoto" class="bg-photo hidden" alt="柜子照片">
+        <div id="gridOverlay" class="grid-overlay hidden">
+          <div class="move-bar" title="拖动移动整个网格框">⋮⋮ 拖动对齐</div>
+          <div id="slotsLayer" class="slots-layer"></div>
+          <span class="handle nw" data-dir="nw"></span>
+          <span class="handle n" data-dir="n"></span>
+          <span class="handle ne" data-dir="ne"></span>
+          <span class="handle w" data-dir="w"></span>
+          <span class="handle e" data-dir="e"></span>
+          <span class="handle sw" data-dir="sw"></span>
+          <span class="handle s" data-dir="s"></span>
+          <span class="handle se" data-dir="se"></span>
+        </div>
+      </div>
+      <div id="currentPick" class="current-pick hidden">
+        当前选中：<span id="pickLabel"></span>
+        <button id="pickClear" class="btn-mini">取消</button>
+      </div>
       <div id="toast" class="toast hidden"></div>
     </div>
   </main>
